@@ -18,13 +18,16 @@ class DigitalPetApp extends StatefulWidget {
 }
 
 class _DigitalPetAppState extends State<DigitalPetApp> {
-  // Pet state variables
-  String petName = "Buddy";
+  // Existing pet state variables
+  String petName = "Buddy"; // Default pet name
   int happinessLevel = 50;
   int hungerLevel = 50;
+  
+  // New energy level variable (0 to 100)
   int _energyLevel = 50;
 
   ui.Image? pawImage;
+
   Timer? hungerTimer;
   Timer? winTimer;
   int winCounter = 0;
@@ -50,7 +53,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
         });
       }
     });
-    // Check win condition every second (win if happiness stays >=80 for 3 minutes)
+    // Check win condition every second (win if happiness stays >= 80 for 3 minutes)
     winTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (!gameOver && !gameWon) {
         if (happinessLevel >= 80) {
@@ -75,7 +78,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     super.dispose();
   }
 
-  // Load paw image from assets
+  // Load the paw icon image from assets
   void _loadPawImage() async {
     final data = await rootBundle.load('assets/dog_paw.png');
     final bytes = data.buffer.asUint8List();
@@ -85,7 +88,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     });
   }
 
-  // Pet actions
+  // Increase happiness and update hunger when playing with the pet
   void _playWithPet() {
     if (gameOver || gameWon) return;
     setState(() {
@@ -95,6 +98,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     });
   }
 
+  // Decrease hunger and update happiness when feeding the pet
   void _feedPet() {
     if (gameOver || gameWon) return;
     setState(() {
@@ -104,17 +108,21 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     });
   }
 
+  // Update happiness based on current hunger level
   void _updateHappiness() {
-    if (hungerLevel < 30)
+    if (hungerLevel < 30) {
       happinessLevel = (happinessLevel - 20).clamp(0, 100);
-    else
+    } else {
       happinessLevel = (happinessLevel + 10).clamp(0, 100);
+    }
   }
 
+  // Increase hunger slightly when playing with the pet
   void _updateHunger() {
     hungerLevel = (hungerLevel + 5).clamp(0, 100);
   }
 
+  // Check loss condition: if hunger is 100 and happiness is 10 or less
   void _checkGameOver() {
     if (hungerLevel >= 100 && happinessLevel <= 10 && !gameOver) {
       gameOver = true;
@@ -128,20 +136,21 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     winTimer?.cancel();
   }
 
-  // Dynamic styling
+  // Dynamic border color for pet image based on happiness level
   Color getPetBorderColor() {
     if (happinessLevel > 70) return Colors.green;
     else if (happinessLevel >= 30) return Colors.yellow;
     else return Colors.red;
   }
 
+  // Mood indicator text with emoji
   String getMoodIndicator() {
     if (happinessLevel > 70) return "Happy 😊";
     else if (happinessLevel >= 30) return "Neutral 😐";
     else return "Unhappy 😢";
   }
 
-  // Set pet name from text field
+  // Set pet name from text input field
   void _setPetName() {
     if (_nameController.text.trim().isNotEmpty) {
       setState(() {
@@ -151,7 +160,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     }
   }
 
-  // Activity selection: update pet state based on chosen activity
+  // Activity selection: perform selected activity and update pet state
   void _performActivity() {
     if (_selectedActivity == null || gameOver || gameWon) return;
     setState(() {
@@ -175,11 +184,13 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
         default:
           break;
       }
+      // Reset selection after performing the activity
       _selectedActivity = null;
       _checkGameOver();
     });
   }
 
+  // Show win dialog when win condition is met
   void _showWinDialog() {
     showDialog(
       context: context,
@@ -190,7 +201,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // Optionally restart the game.
+              // Optionally, restart the game here.
             },
             child: Text("OK"),
           ),
@@ -199,10 +210,11 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     );
   }
 
+  // Show game over dialog when loss condition is met
   void _showGameOverDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: false, // Force user to acknowledge game over.
       builder: (_) => AlertDialog(
         title: Text("Game Over"),
         content: Text("Your pet is too hungry and unhappy. Game Over!"),
@@ -210,7 +222,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // Optionally restart the game.
+              // Optionally, restart the game here.
             },
             child: Text("OK"),
           ),
@@ -219,12 +231,18 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     );
   }
 
-  // Helper text style for clean typography
+  // Helper text style with subtle white shadow for readability
   TextStyle _textStyle(double fontSize, {Color color = Colors.brown}) {
     return TextStyle(
       fontSize: fontSize,
       color: color,
-      fontWeight: FontWeight.w500,
+      shadows: [
+        Shadow(
+          offset: Offset(1, 1),
+          blurRadius: 2,
+          color: Colors.white,
+        )
+      ],
     );
   }
 
@@ -233,11 +251,10 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Digital Dog'),
-        centerTitle: true,
       ),
       body: Stack(
         children: [
-          // Background layer: gradient with subtle paw icons overlay
+          // Layer 1: Gradient background that fits the dog-themed UI
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -247,6 +264,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
               ),
             ),
           ),
+          // Layer 2: Evenly spaced paw icons in the background
           if (pawImage != null)
             CustomPaint(
               size: MediaQuery.of(context).size,
@@ -255,202 +273,184 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
                 tileSize: 20,
               ),
             ),
-          // Foreground: scrollable, centered card containing the UI
+          // Layer 3: Foreground content in a scrollable area with padding
           Center(
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(16),
-              child: Card(
-                color: Colors.white.withOpacity(0.9),
-                elevation: 8,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Pet Name Customization
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _nameController,
-                              decoration: InputDecoration(
-                                labelText: "Enter pet name",
-                                labelStyle: _textStyle(16, color: Colors.brown[800]!),
-                                filled: true,
-                                fillColor: Colors.brown.shade50,
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.brown),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.brown),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.brown, width: 2),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  // Pet Name Customization with matching UI style
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _nameController,
+                            decoration: InputDecoration(
+                              labelText: "Enter pet name",
+                              labelStyle: _textStyle(16, color: Colors.brown[800]!),
+                              filled: true,
+                              fillColor: Colors.brown[50],
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.brown),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.brown),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.brown, width: 2),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
                           ),
-                          SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: _setPetName,
-                            child: Text("Set Name"),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.brown,
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            ),
+                        ),
+                        SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: _setPetName,
+                          child: Text("Set Name"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.brown,
+                            foregroundColor: Colors.white,
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      // Pet Image with Dynamic Border
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.brown.shade50,
-                          border: Border.all(color: getPetBorderColor(), width: 3),
-                          borderRadius: BorderRadius.circular(12),
                         ),
-                        padding: EdgeInsets.all(8.0),
-                        child: Image.asset(
-                          'assets/dog.png',
-                          width: 150,
-                          height: 150,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        'Name: $petName',
-                        style: _textStyle(24, color: Colors.brown[800]!),
-                      ),
-                      SizedBox(height: 8),
-                      // Mood Indicator
-                      Text(
-                        'Mood: ${getMoodIndicator()}',
-                        style: _textStyle(20, color: Colors.brown[700]!),
-                      ),
-                      SizedBox(height: 12),
-                      // Stats Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Text(
-                            'Happiness: $happinessLevel',
-                            style: _textStyle(18, color: Colors.brown[700]!),
-                          ),
-                          Text(
-                            'Hunger: $hungerLevel',
-                            style: _textStyle(18, color: Colors.brown[700]!),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 12),
-                      // Energy Bar Section
-                      Column(
-                        children: [
-                          Text(
-                            'Energy: $_energyLevel',
-                            style: _textStyle(18, color: Colors.brown[700]!),
-                          ),
-                          SizedBox(height: 4),
-                          Container(
-                            margin: EdgeInsets.symmetric(horizontal: 32),
-                            padding: EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.8),
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 4,
-                                  offset: Offset(2, 2),
-                                )
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: LinearProgressIndicator(
-                                minHeight: 20,
-                                value: _energyLevel / 100,
-                                backgroundColor: Colors.grey[300],
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.orangeAccent),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      // Activity Selection
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.brown.shade100.withOpacity(0.8),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            DropdownButton<String>(
-                              hint: Text("Select Activity", style: _textStyle(16)),
-                              value: _selectedActivity,
-                              items: _activities.map((activity) {
-                                return DropdownMenuItem<String>(
-                                  value: activity,
-                                  child: Text(activity, style: _textStyle(16, color: Colors.brown[800]!)),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedActivity = value;
-                                });
-                              },
-                              dropdownColor: Colors.brown.shade50,
-                            ),
-                            SizedBox(width: 12),
-                            ElevatedButton(
-                              onPressed: _performActivity,
-                              child: Text("Do Activity"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.brown,
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 24),
-                      // Action Buttons
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.brown,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          textStyle: TextStyle(fontSize: 18),
-                        ),
-                        onPressed: _playWithPet,
-                        child: Text('Play with Your Dog'),
-                      ),
-                      SizedBox(height: 16),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.brown,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          textStyle: TextStyle(fontSize: 18),
-                        ),
-                        onPressed: _feedPet,
-                        child: Text('Feed Your Dog'),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
+                  // Dog image with dynamic border color based on happiness
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.brown[50],
+                      border: Border.all(color: getPetBorderColor(), width: 3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: EdgeInsets.all(8.0),
+                    child: Image.asset(
+                      'assets/dog.png', // Dog image asset
+                      width: 150,
+                      height: 150,
+                    ),
+                  ),
+                  SizedBox(height: 16.0),
+                  Text(
+                    'Name: $petName',
+                    style: _textStyle(24, color: Colors.brown[800]!),
+                  ),
+                  SizedBox(height: 8.0),
+                  // Mood indicator text with emoji
+                  Text(
+                    'Mood: ${getMoodIndicator()}',
+                    style: _textStyle(20, color: Colors.brown[700]!),
+                  ),
+                  SizedBox(height: 16.0),
+                  Text(
+                    'Happiness Level: $happinessLevel',
+                    style: _textStyle(20, color: Colors.brown[700]!),
+                  ),
+                  SizedBox(height: 8.0),
+                  Text(
+                    'Hunger Level: $hungerLevel',
+                    style: _textStyle(20, color: Colors.brown[700]!),
+                  ),
+                  SizedBox(height: 16.0),
+                  // Energy bar widget with enhanced styling
+                  Text(
+                    'Energy Level: $_energyLevel',
+                    style: _textStyle(20, color: Colors.brown[700]!),
+                  ),
+                  SizedBox(height: 4.0),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 32.0),
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: Offset(2, 2),
+                        )
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LinearProgressIndicator(
+                        minHeight: 20,
+                        value: _energyLevel / 100,
+                        backgroundColor: Colors.grey[300],
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.orangeAccent),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.0),
+                  // Activity selection row with decorative container
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.brown.shade100.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DropdownButton<String>(
+                          hint: Text("Select Activity", style: _textStyle(16)),
+                          value: _selectedActivity,
+                          items: _activities.map((activity) {
+                            return DropdownMenuItem<String>(
+                              value: activity,
+                              child: Text(activity, style: _textStyle(16, color: Colors.brown[800]!)),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedActivity = value;
+                            });
+                          },
+                          dropdownColor: Colors.brown.shade50,
+                        ),
+                        SizedBox(width: 8),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.brown,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            textStyle: TextStyle(fontSize: 16),
+                          ),
+                          onPressed: _performActivity,
+                          child: Text("Do Activity"),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 24.0),
+                  // Action Buttons for playing and feeding the pet
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.brown,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      textStyle: TextStyle(fontSize: 18),
+                    ),
+                    onPressed: _playWithPet,
+                    child: Text('Play with Your Dog'),
+                  ),
+                  SizedBox(height: 16.0),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.brown,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      textStyle: TextStyle(fontSize: 18),
+                    ),
+                    onPressed: _feedPet,
+                    child: Text('Feed Your Dog'),
+                  ),
+                ],
               ),
             ),
           ),
@@ -460,7 +460,7 @@ class _DigitalPetAppState extends State<DigitalPetApp> {
   }
 }
 
-// Custom painter to evenly distribute 10 small paw icons (2 rows x 5 columns) across the screen
+// Custom painter that evenly distributes 10 small paw icons (2 rows x 5 columns) across the screen
 class EvenlySpacedPawPainter extends CustomPainter {
   final ui.Image pawImage;
   final double tileSize;
@@ -469,6 +469,7 @@ class EvenlySpacedPawPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Arrange 10 icons in 2 rows and 5 columns
     int cols = 5;
     int rows = 2;
     for (int i = 0; i < rows; i++) {
